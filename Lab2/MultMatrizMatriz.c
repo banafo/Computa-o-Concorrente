@@ -37,9 +37,8 @@ int main(int argc, char *argv[]) {
    
    int numCPU = sysconf(_SC_NPROCESSORS_ONLN); 
    printf("Numero de processadores: %d\n", numCPU);
-
-    double inicio, fim, delta1, delta2, delta3;
-
+   double inicio, fim, delta1, delta2, delta3;
+	
    //int dim;
    GET_TIME(inicio); 
 

@@ -19,18 +19,14 @@ void *multiplicaMatrizMatriz(void *tid)
    int td = *(int *) tid;
    int i, j, k;
 
-   for(i = td; i < dim; i+=threads)
-   {
-   	
-		for(k = 0; k < dim; k++)
-		{
-			for(j = 0; j < dim; j++)
-			{
-			 	matX[i*dim+k] += matA[i*dim+j] * matB[j*dim+k];
-			}
+   for(i = td; i < dim; i+=threads){
+	   for(k = 0; k < dim; k++){
+		for(j = 0; j < dim; j++){
+			matX[i*dim+k] += matA[i*dim+j] * matB[j*dim+k];
 		}
+	   }
    }
-
+	
    free(tid);
    pthread_exit(NULL);
 }

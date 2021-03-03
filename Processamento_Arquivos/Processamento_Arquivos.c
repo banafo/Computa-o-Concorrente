@@ -1,30 +1,30 @@
-#include<semaphore.h>
-#include<pthread.h>
+#include<semaphore.h>	//para usar semáforo
+#include<pthread.h>	//para criação das threads
 #include<stdlib.h>
 #include<stdio.h>
-#include "timer.h" 
-#include <unistd.h> //para usar a funcao "sysconf"
+#include "timer.h" 	//para usar GET_TIME()
+#include <unistd.h>	//para usar a funcao "sysconf"
 
-#define N 500   // Tamanho dos blocos
-#define M 3     // Entradas do buffer
-#define T 4     // Número de threads
+#define N 500   	// Tamanho dos blocos
+#define M 3     	// Entradas do buffer
+#define T 4     	// Número de threads
 
 // Variáveis globais - início
 
-char* buffer[M];                        // Buffer de blocos
+char* buffer[M];                        				// Buffer de blocos
 int topo = 0, quantidade = 0, l = 0, e = 0, terminouDeEscrever = 0, blocosLidos[T-1];  // Variáveis de controle
-long long int numeros;                 // Quantidade de números a serem lidos
-sem_t condLeitura, condEscrita, mutex; // Semáforo para sincronização das threads
-long long int t1[] = {0, 0}, t2 = 0, t3 = 0;     // Variáveis de retorno
+long long int numeros;                 					// Quantidade de números a serem lidos
+sem_t condLeitura, condEscrita, mutex; 					// Semáforo para sincronização das threads
+long long int t1[] = {0, 0}, t2 = 0, t3 = 0;    			// Variáveis de retorno
 char c1 = ' ';
 
 // Variáveis globais - fim
 
 // Função das Threads - início
-void* leArquivo(void* arg);
-void* iguais(void* arg);
-void* triplas(void* arg);
-void* sequencia(void* arg);
+void* leArquivo(void* arg);						//Função para ler arquivo
+void* iguais(void* arg);						//Função para tratar numeros iguais
+void* triplas(void* arg);						//Função para tratar triplas de numeros
+void* sequencia(void* arg);						//Função para tratar sequencis de numeros
 // Função das Threads - fim
 
 //Funções Criadas
@@ -44,7 +44,7 @@ void liberaBuffer();							//Função para libera buffer
 
 int main(int argc, char* argv[]){
 
-  double inicio, fim, delta1; //variaveis para medir o tempo de execucao
+  double inicio, fim, delta1;		 //variaveis para medir o tempo de execucao
 
   //descobre quantos processadores a máquina possui
   int numCPU = sysconf(_SC_NPROCESSORS_ONLN); 
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
 	sem_destroy(&condEscrita);
 	sem_destroy(&condLeitura);
 	sem_destroy(&mutex);
-	fclose(arquivo); // Fecha arquivo
+	fclose(arquivo); 	// Fecha arquivo
 	return 0;
 }
 
@@ -117,13 +117,13 @@ void* leArquivo(void* arg){
 	
 	sem_wait(&mutex);
 	if(fread(buffer[topo], sizeof(char), N, (FILE*) arg) != 0){ // Se leu algo, então atualiza as variáveis de controle
-		numeros = atoi(buffer[0]); // Quantidade de números que seram lidos no arquivo
-		while(buffer[0][i] == ' ') i++;	// Pula espaços em branco no início do arquivo
-		while(buffer[0][i] != ' '){ // Limpa o primeiro número da sequência no buffer (precisa que tamanho do buffer seja maior que 20 bytes)
-			buffer[0][i] = ' ';
+		numeros = atoi(buffer[0]); 		// Quantidade de números que seram lidos no arquivo
+		while(buffer[0][i] == ' ') i++;		// Pula espaços em branco no início do arquivo
+		while(buffer[0][i] != ' '){ 		// Limpa o primeiro número da sequência no buffer (precisa que tamanho do buffer seja maior que 20 bytes)
+			buffer[0][i] = ' ';	
 			i++;
 		}
-		for(int i = 0; i < N; i++){ // Percorre o arquivo para contar quantos números foram escritos
+		for(int i = 0; i < N; i++){ 		// Percorre o arquivo para contar quantos números foram escritos
 			if(lidos == numeros){
 				terminouDeEscrever = 1;
 				break;
@@ -183,7 +183,8 @@ void* iguais(void* arg){ // Maior sequência de valores idênticos
 	
 }
 //----------------------------------------------------------------------------------------------------
-void* triplas(void* arg){ // Triplas de números
+
+void* triplas(void* arg){ 		// Triplas de números
 	int teste = 0, id = 1, base = 0;
 	long long int lidos = 0;
 	char c = '0';
@@ -213,7 +214,8 @@ void* triplas(void* arg){ // Triplas de números
 	}
 }
 //----------------------------------------------------------------------------------------------------
-void* sequencia(void* arg){ // Sequência <012345>
+
+void* sequencia(void* arg){		 // Sequência <012345>
 	int teste = 0, id = 2, base = 0;
 	long long int lidos = 0;
 	char c[] = {'0', '1', '2', '3', '4', '5'};
@@ -258,9 +260,9 @@ long long int leitura(FILE* arquivo, long long int* lidos){
 	}
 	sem_post(&mutex);
 	
-	long long int ret = fread(buffer[topo], sizeof(char), N, arquivo); // Lê arquivo e escreve no buffer
+	long long int ret = fread(buffer[topo], sizeof(char), N, arquivo);	 // Lê arquivo e escreve no buffer
 	
-	if(ret != 0){ // Se escreveu algo, então atualiza as variáveis de controle
+	if(ret != 0){ 								// Se escreveu algo, então atualiza as variáveis de controle
 		for(int i = 0; i < N; i++){
 			if(*lidos == numeros){
 				ret = 0;
@@ -277,17 +279,18 @@ long long int leitura(FILE* arquivo, long long int* lidos){
 		quantidade++;
 		sem_post(&mutex);
 	}
-	else{ // Senão escreve, então termina de escrever
+	else{ 	// Senão escreve, então termina de escrever
 		sem_wait(&mutex);
 		terminouDeEscrever = 1;
 		sem_post(&mutex);
 	}
 	sem_wait(&mutex);
-	if(l > 0){ l--; sem_post(&condLeitura); } // Libera as threads bloqueadas
+	if(l > 0){ l--; sem_post(&condLeitura); }		 // Libera as threads bloqueadas
 	sem_post(&mutex);
 	return ret;
 }
 //----------------------------------------------------------------------------------------------------------------
+
 //Função para verificar término da leitura das threads
 void testaTermino(){
 	sem_wait(&mutex);
@@ -302,19 +305,20 @@ void testaTermino(){
 	sem_post(&mutex);
 }
 //----------------------------------------------------------------------------------------------------------------
+
 //Função para atualização de blocos
 void atualizaBlocos(int id){	
 	sem_wait(&mutex);
 	blocosLidos[id]++;
 	int menor = blocosLidos[0];
-	for(int i = 1; i < T-1; i++) if(menor > blocosLidos[i]) menor = blocosLidos[i]; // Pega o menor número de blocos lidos entre as 3 threads
-	for(int i = 0; i < T-1; i++) blocosLidos[i] -= menor; // Subtrai a menor quantidade de blocos lidos pelas threads
-	quantidade -= menor; // Diz que as threads leram a quantidade na variável "menor"
+	for(int i = 1; i < T-1; i++) if(menor > blocosLidos[i]) menor = blocosLidos[i]; 	// Pega o menor número de blocos lidos entre as 3 threads
+	for(int i = 0; i < T-1; i++) blocosLidos[i] -= menor; 					// Subtrai a menor quantidade de blocos lidos pelas threads
+	quantidade -= menor; 									// Diz que as threads leram a quantidade na variável "menor"
 	if(menor && e){ e--; sem_post(&condEscrita); }
 	sem_post(&mutex);
 	
 	sem_wait(&mutex);
-	while(quantidade != 0 && blocosLidos[id] == quantidade){ // Enquanto os blocos lidos forem iguais a quantidade, então deve esperar
+	while(quantidade != 0 && blocosLidos[id] == quantidade){				 // Enquanto os blocos lidos forem iguais a quantidade, então deve esperar
 		l++;
 		sem_post(&mutex);
 		sem_wait(&condLeitura);
@@ -325,6 +329,7 @@ void atualizaBlocos(int id){
 }
 
 //------------------------------------------------------------------------------------------------------
+
 //Função para inicializção do buffer
 void inicializaBuffer(){
 	for(int i = 0; i < M; i++) buffer[i] = malloc(N*sizeof(char));
@@ -332,6 +337,7 @@ void inicializaBuffer(){
 }
 
 //------------------------------------------------------------------------------------------------------
+
 //Função para libera buffer
 void liberaBuffer(){
 	for(int i = 0; i < M; i++) free(buffer[i]);
